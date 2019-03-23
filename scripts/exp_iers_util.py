@@ -271,6 +271,8 @@ def cv_test(info, load_data, target_fold=None):
     if data.event_feature is not None:
         info['prediction']['event_feature'] = {
             k: {} for k in data.event_feature.dtype.names}
+        if 'sensitive' in info['prediction']['event_feature']:
+            del info['prediction']['event_feature']['sensitive']
 
     # 20% of ratings per user is used for test
     cv = ShuffleSplitWithinGroups(n_splits=n_folds, test_size=0.2)
@@ -299,9 +301,10 @@ def cv_test(info, load_data, target_fold=None):
         info['prediction']['mask'][str(fold)] = test_i
         if data.event_feature is not None:
             ef_names = list(data.event_feature.dtype.names)
-            ef_names.remove('sensitive')
+            if 'sensitive' in ef_names:
+                ef_names.remove('sensitive')
             if len(ef_names) > 0:
-                for k in data.event_feature.dtype.names:
+                for k in ef_names:
                     info['prediction']['event_feature'][k][str(fold)] = (
                         data.event_feature[k][test_i])
 
